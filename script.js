@@ -26,7 +26,7 @@ sendBtn.addEventListener("click", async () => {
   chatBox.appendChild(userMsg);
 
   // Backend ko call karo (Render ya local server pe)
-  const res = await fetch("https://chatbot-site.onrender.com/api/chat", {
+  const res = await fetch("https://chatbot-site-fped.onrender.com/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: userText })

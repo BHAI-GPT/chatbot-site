@@ -16,7 +16,7 @@ sendBtn.addEventListener("click", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer YOUR_API_KEY" // <-- yaha apni API key dalni hai
+      "Authorization": "Bearer  YOUR_API_KEY" // <-- yaha apni API key dalni hai
     },
     body: JSON.stringify({
       model: "gpt-3.5-turbo",

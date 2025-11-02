@@ -1,54 +1,55 @@
-const chatBox = document.getElementById("chatbox");
-const input = document.getElementById("userInput");
-const sendBtn = document.getElementById("sendBtn");
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
 
-sendBtn.addEventListener("click", async () => {
-  const userText = input.value;
-  if (!userText) return;
+dotenv.config();
 
-  // User message show karo
-  const userMsg = document.createElement("div");
-  userMsg.textContent = "🧑: " + userText;
-  chatBox.appendChild(userMsg);
+const app = express();
 
-  // API call
-  const input = document.getElementById("userInput");
-const sendBtn = document.getElementById("sendBtn");
-const chatBox = document.getElementById("chatBox");
+// For resolving __dirname (because ES modules don’t have it directly)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-sendBtn.addEventListener("click", async () => {
-  const userText = input.value;
-  if (!userText) return;
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public"))); // Serve frontend files
 
-  // User message show karo
-  const userMsg = document.createElement("div");
-  userMsg.textContent = "🧑: " + userText;
-  chatBox.appendChild(userMsg);
-
-  // Backend ko call karo (Render ya local server pe)
-  const res = await fetch("https://chatbot-site-fped.onrender.com/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: userText })
-  });
-
-  const data = await res.json();
-  const reply = data.reply;
-
-  // Bot message show karo
-  const botMsg = document.createElement("div");
-  botMsg.textContent = "🤖: " + reply;
-  chatBox.appendChild(botMsg);
-
-  input.value = "";
+// Main route — serves index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-  const data = await res.json();
-  const reply = data.choices[0].message.content;
 
-  // Bot message show karo
-  const botMsg = document.createElement("div");
-  botMsg.textContent = "🤖: " + reply;
-  chatBox.appendChild(botMsg);
+// Chatbot API route
+app.post("/chat", async (req, res) => {
+  const userMessage = req.body.message;
+  const apiKey = process.env.OPENAI_API_KEY;
 
-  input.value = "";
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "You are a friendly assistant." },
+          { role: "user", content: userMessage },
+        ],
+      }),
+    });
+
+    const data = await response.json();
+    res.json({ reply: data.choices[0].message.content });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Something went wrong." });
+  }
 });
+
+// Server listen
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
